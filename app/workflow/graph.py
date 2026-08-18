@@ -4,9 +4,6 @@ import logging
 import uuid
 from typing import Optional
 
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from langgraph.graph import StateGraph, END
-
 from langgraph.graph import StateGraph, END
 
 from app.models.state import ResearchState
@@ -22,7 +19,7 @@ from app.workflow.nodes import (
 logger = logging.getLogger(__name__)
 
 
-def build_graph(checkpointer=None) -> StateGraph:
+def build_graph() -> StateGraph:
     workflow = StateGraph(ResearchState)
 
     # Add nodes
@@ -76,7 +73,7 @@ def build_graph(checkpointer=None) -> StateGraph:
     # Done
     workflow.add_edge("formatter", END)
 
-    return workflow.compile(checkpointer=checkpointer)
+    return workflow.compile()
 
 
 async def run_research(
@@ -93,7 +90,7 @@ async def run_research(
         task: The research topic/question.
         use_rag: Whether to enable RAG knowledge base retrieval.
         max_iterations: Maximum reviewer iteration rounds.
-        task_id: Stable thread id for checkpointing/resume.
+        task_id: Optional stable task id (also keys the workspace dir).
 
     Returns:
         Final ResearchState after workflow completion.
@@ -102,37 +99,18 @@ async def run_research(
     from app.services.workspace import WorkspaceManager
 
     resolved_task_id = task_id or f"task_{uuid.uuid4().hex[:12]}"
+    graph = build_graph()
 
-    async with AsyncSqliteSaver.from_conn_string(settings.CHECKPOINT_DB_PATH) as checkpointer:
-        graph = build_graph(checkpointer=checkpointer)
-        config = {
-            "configurable": {
-                "thread_id": resolved_task_id
-            }
-        }
-        ws = WorkspaceManager(root_dir=settings.WORKSPACE_ROOT)
-        workspace_dir = await ws.ensure_workspace(resolved_task_id)
-        workspace_files = [f["name"] for f in ws.list_files(resolved_task_id)]
+    ws = WorkspaceManager(root_dir=settings.WORKSPACE_ROOT)
+    workspace_dir = await ws.ensure_workspace(resolved_task_id)
+    workspace_files = [f["name"] for f in ws.list_files(resolved_task_id)]
 
-        initial_state = ResearchState(
-            task=task,
-            use_rag=use_rag,
-            profile_id=profile_id,
-            max_iterations=max_iterations,
-            workspace_dir=workspace_dir,
-            workspace_files=workspace_files,
-        )
-        return await graph.ainvoke(initial_state, config=config)
-
-
-async def run_research_resume(task_id: str) -> ResearchState:
-    """Resume an interrupted workflow from its latest checkpoint."""
-    from app.config import settings
-    from app.services.workspace import WorkspaceManager
-
-    await WorkspaceManager(root_dir=settings.WORKSPACE_ROOT).ensure_workspace(task_id)
-
-    async with AsyncSqliteSaver.from_conn_string(settings.CHECKPOINT_DB_PATH) as checkpointer:
-        graph = build_graph(checkpointer=checkpointer)
-        config = {"configurable": {"thread_id": task_id}}
-        return await graph.ainvoke(None, config=config)
+    initial_state = ResearchState(
+        task=task,
+        use_rag=use_rag,
+        profile_id=profile_id,
+        max_iterations=max_iterations,
+        workspace_dir=workspace_dir,
+        workspace_files=workspace_files,
+    )
+    return await graph.ainvoke(initial_state)

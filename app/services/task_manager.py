@@ -143,7 +143,7 @@ class TaskManager:
             task_info.event_queues.remove(queue)
 
     # ------------------------------------------------------------------
-    # Checkpoint / recovery
+    # Task recovery
     # ------------------------------------------------------------------
 
     async def save_checkpoint(self, task_id: str) -> None:
@@ -186,14 +186,12 @@ class TaskManager:
             logger.warning("Failed to save checkpoint for %s: %s", task_id, exc)
 
     async def recover_interrupted_tasks(self) -> None:
-        """Handle tasks left running after a restart.
+        """Mark tasks left running after a restart as failed.
 
-        Default: mark them failed with a clear message. Auto-resume is
-        opt-in via RESUME_INTERRUPTED_TASKS=true to avoid surprise runs
-        and unexpected token usage at startup.
+        Called on service startup so interrupted tasks surface as failed
+        instead of appearing stuck forever.
         """
         try:
-            from app.config import settings
             from app.models.database import _async_session_maker
 
             if _async_session_maker is None:
@@ -206,39 +204,11 @@ class TaskManager:
                 )
                 interrupted = list(result.scalars().all())
                 for task in interrupted:
-                    if not settings.RESUME_INTERRUPTED_TASKS:
-                        logger.info("Marking interrupted task %s as failed (restart)", task.id)
-                        task.status = "failed"
-                        task.errors = json.dumps(
-                            ["任务因服务重启而中断；如需自动续跑，请设置 RESUME_INTERRUPTED_TASKS=true"]
-                        )
-                        await repo.update(task)
-                        continue
-                    try:
-                        from app.workflow.graph import run_research_resume
-
-                        final_state = await run_research_resume(task.id)
-                        task.status = final_state.status
-                        task.report = final_state.final_report
-                        task.review_score = final_state.review_score
-                        task.review_feedback = final_state.review_feedback
-                        task.errors = json.dumps(final_state.errors)
-                        task.research_data = json.dumps(
-                            final_state.research_data, ensure_ascii=False, default=str
-                        )
-                        task.sources = json.dumps(
-                            final_state.sources, ensure_ascii=False, default=str
-                        )
-                        task.completed_at = (
-                            datetime.now() if final_state.status == "completed" else None
-                        )
-                        logger.info("Resumed interrupted task %s (%s)", task.id, task.status)
-                    except Exception as exc:
-                        logger.warning(
-                            "Resume failed for %s, marking failed: %s", task.id, exc
-                        )
-                        task.status = "failed"
-                        task.errors = json.dumps([f"Resume failed: {exc}"])
+                    logger.info("Marking interrupted task %s as failed (restart)", task.id)
+                    task.status = "failed"
+                    task.errors = json.dumps(
+                        ["任务因服务重启而中断"]
+                    )
                     await repo.update(task)
         except Exception as exc:
             logger.warning("Failed to recover interrupted tasks: %s", exc)

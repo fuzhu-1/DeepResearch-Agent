@@ -11,7 +11,6 @@ python-multipart>=0.0.7
 # Workflow
 langgraph>=0.2.0
 langchain-core>=0.3.0
-langgraph-checkpoint-sqlite>=2.0.0
 
 # LLM
 openai>=1.13.0

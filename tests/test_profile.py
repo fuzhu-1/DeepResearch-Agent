@@ -243,7 +243,7 @@ class TestModelOverride:
 
         profile = await get_default_profile()
         fake = self.FakeGraph()
-        monkeypatch.setattr(graph_mod, "build_graph", lambda checkpointer=None: fake)
+        monkeypatch.setattr(graph_mod, "build_graph", lambda: fake)
         state = await graph_mod.run_research("测试任务", use_rag=False, profile_id=profile["id"])
         assert state.profile_id == profile["id"]
 

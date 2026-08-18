@@ -319,8 +319,7 @@ deep-research-agent/
 │   ├── knowledge/               # Knowledge Memory 存储
 │   ├── reports/                 # 生成的报告文件
 │   ├── uploads/                 # 用户上传文件
-│   ├── workspaces/              # 每任务隔离工作目录（含上传附件与报告）
-│   └── checkpoints.db           # LangGraph 检查点（断点续跑）
+│   └── workspaces/              # 每任务隔离工作目录（含上传附件与报告）
 ├── tests/
 │   ├── conftest.py              # 测试配置与 Fixtures
 │   ├── test_agents.py           # Agent 单元测试
@@ -339,7 +338,6 @@ deep-research-agent/
 │   ├── test_auth.py             # 认证测试
 │   ├── test_settings.py         # 配置测试
 │   ├── test_database.py         # 数据库测试
-│   ├── test_checkpoint.py       # 检查点测试
 │   ├── test_citation_validator.py # 引用校验测试
 │   ├── test_grounding.py        # 论断-证据校验测试
 │   ├── test_search_backends.py  # 搜索后端测试

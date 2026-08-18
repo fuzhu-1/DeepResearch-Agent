@@ -42,10 +42,6 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     CHROMA_DB_PATH: str = "./data/chroma_db"
 
-    # Workflow checkpointing
-    CHECKPOINT_DB_PATH: str = "./data/checkpoints.db"
-    RESUME_INTERRUPTED_TASKS: bool = False
-
     # Tools
     ENABLE_PYTHON_TOOL: bool = False
 

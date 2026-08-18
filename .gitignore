@@ -12,7 +12,6 @@ data/chroma_db/
 data/reports/
 data/uploads/
 data/research.db
-data/checkpoints.db
 data/eval/
 data/config/
 docs/
