@@ -1,5 +1,7 @@
 """Tests for WorkspaceReaderTool (read_workspace): reads reference files from a task workspace."""
 
+import os
+
 import pytest
 
 from app.tools.workspace_reader import WorkspaceReaderTool
@@ -44,6 +46,32 @@ class TestWorkspaceReader:
         tool = WorkspaceReaderTool()
         result = await tool.execute(filename="/etc/passwd", workspace_dir=str(reader_ws))
         assert result.success is False
+        assert result.error  # error message must be present and non-empty
+
+    @pytest.mark.asyncio
+    async def test_read_workspace_rejects_missing_workspace_dir(self):
+        tool = WorkspaceReaderTool()
+        result = await tool.execute(filename="ref.md")
+        assert result.success is False
+        assert "workspace_dir" in result.error
+
+    @pytest.mark.asyncio
+    async def test_read_workspace_rejects_symlink_escape(self, tmp_path):
+        """A symlink inside the workspace pointing outside must be rejected."""
+        ws_dir = tmp_path / "ws"
+        ws_dir.mkdir()
+        outside = tmp_path / "secret.txt"
+        outside.write_text("top secret", encoding="utf-8")
+        link = ws_dir / "link.txt"
+        try:
+            os.symlink(outside, link)
+        except (OSError, NotImplementedError):
+            pytest.skip("symlink creation not supported in this environment")
+
+        tool = WorkspaceReaderTool()
+        result = await tool.execute(filename="link.txt", workspace_dir=str(ws_dir))
+        assert result.success is False
+        assert result.data is None
 
     @pytest.mark.asyncio
     async def test_read_workspace_truncates_long_content(self, reader_ws):
