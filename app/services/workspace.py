@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
-class FileCountLimitExceeded(ValueError):
+class FileCountLimitExceededError(ValueError):
     """Raised when a workspace already holds the maximum number of files."""
 
 
@@ -115,7 +115,7 @@ class WorkspaceManager:
         # Enforce the per-task file-count cap atomically, right before the
         # write, so concurrent uploads cannot both pass a list-and-write check.
         if max_files > 0 and len(os.listdir(path)) >= max_files:
-            raise FileCountLimitExceeded(f"文件数已达上限: {max_files}")
+            raise FileCountLimitExceededError(f"文件数已达上限: {max_files}")
         dest = os.path.join(path, filename)
         with open(dest, "wb") as fh:
             fh.write(content)

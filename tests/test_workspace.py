@@ -74,7 +74,7 @@ class TestWorkspaceLifecycle:
 
     @pytest.mark.asyncio
     async def test_save_upload_enforces_max_files(self, ws):
-        from app.services.workspace import FileCountLimitExceeded
+        from app.services.workspace import FileCountLimitExceededError
 
         await ws.ensure_workspace("task_max_files")
         meta1 = await ws.save_upload(
@@ -84,7 +84,7 @@ class TestWorkspaceLifecycle:
             max_files=1,
         )
         assert meta1["name"] == "one.md"
-        with pytest.raises(FileCountLimitExceeded, match="文件数已达上限"):
+        with pytest.raises(FileCountLimitExceededError, match="文件数已达上限"):
             await ws.save_upload(
                 "task_max_files",
                 filename="two.md",

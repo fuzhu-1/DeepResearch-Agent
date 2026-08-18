@@ -303,7 +303,7 @@ async def upload_research_file(
     if not task_info:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    from app.services.workspace import FileCountLimitExceeded, WorkspaceManager
+    from app.services.workspace import FileCountLimitExceededError, WorkspaceManager
 
     allowed = [e.strip() for e in settings.UPLOAD_ALLOWED_EXTS.split(",")]
     content = await file.read()
@@ -322,7 +322,7 @@ async def upload_research_file(
             max_files=settings.UPLOAD_MAX_FILES,
             allowed_exts=tuple(allowed),
         )
-    except FileCountLimitExceeded as exc:
+    except FileCountLimitExceededError as exc:
         # The per-task file-count cap is a resource limit → 413.
         raise HTTPException(status_code=413, detail=str(exc))
     except ValueError as exc:
