@@ -60,6 +60,7 @@ function AppInner() {
   const [activeTaskId, setActiveTaskId] = useState(null)
   const [history, setHistory] = useState([])
   const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState('research')
   const [histBatchMode, setHistBatchMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
@@ -148,44 +149,80 @@ function AppInner() {
       .catch(() => setSettingsConfigured(false))
   }, [])
 
-  const handleSubmit = useCallback(async ({ task, depth, useRag }) => {
+  const handleSubmit = useCallback(async ({ task, depth, useRag, files = [] }) => {
     setError(null)
-
+    setSubmitting(true)
     const depthMap = { quick: 1, standard: 3, deep: 5 }
     const maxIterations = depthMap[depth] || 3
 
-    try {
-      const response = await authFetch('/api/research', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, max_iterations: maxIterations, format: 'markdown', use_rag: useRag }),
-      })
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        setError(errData.detail || `HTTP ${response.status}: 研究请求失败`)
-        return
-      }
-
-      const data = await response.json()
-      const id = data.task_id
+    const registerTask = (id) => {
       setTasks((prev) => ({
         ...prev,
-        [id]: {
-          id,
-          task,
-          status: 'running',
-          reportContent: data.final_report || '',
-          error: null,
-          events: [],
-          isConnected: false,
-        },
+        [id]: { id, task, status: 'running', reportContent: '', error: null, events: [], isConnected: false },
       }))
       setActiveTaskId(id)
+    }
+
+    try {
+      if (files && files.length > 0) {
+        // 1. Pre-create the task (no workflow started)
+        const prep = await authFetch('/api/research/prepare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task }),
+        })
+        if (!prep.ok) {
+          const d = await prep.json().catch(() => ({}))
+          setError(d.detail || '创建任务失败')
+          return
+        }
+        const { task_id } = await prep.json()
+
+        // 2. Upload each file sequentially. DO NOT set Content-Type on FormData.
+        for (const f of files) {
+          const fd = new FormData()
+          fd.append('file', f.file)
+          const up = await authFetch(`/api/research/${task_id}/upload`, { method: 'POST', body: fd })
+          if (!up.ok) {
+            const d = await up.json().catch(() => ({}))
+            setError(`上传 ${f.name} 失败: ${d.detail || '未知错误'}`)
+            return
+          }
+        }
+
+        // 3. Start the prepared task
+        const start = await authFetch(`/api/research/${task_id}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ max_iterations: maxIterations, format: 'markdown', use_rag: useRag }),
+        })
+        if (!start.ok) {
+          const d = await start.json().catch(() => ({}))
+          setError(d.detail || '启动任务失败')
+          return
+        }
+        registerTask(task_id)
+      } else {
+        // Existing direct flow (unchanged behavior)
+        const response = await authFetch('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task, max_iterations: maxIterations, format: 'markdown', use_rag: useRag }),
+        })
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          setError(errData.detail || `HTTP ${response.status}: 研究请求失败`)
+          return
+        }
+        const data = await response.json()
+        registerTask(data.task_id)
+      }
     } catch (err) {
       setError(err.message || '启动研究任务失败')
+    } finally {
+      setSubmitting(false)
     }
-  }, [authFetch, fetchHistory])
+  }, [authFetch])
 
   const handleViewHistory = useCallback(async (historyTaskId) => {
     if (!historyTaskId) return
@@ -577,7 +614,7 @@ function AppInner() {
         {/* === 研究标签 === */}
         {activeTab === 'research' && !hasActiveResearch && (
           <>
-            <InputPanel onSubmit={handleSubmit} isLoading={isResearching} />
+            <InputPanel onSubmit={handleSubmit} isLoading={isResearching || submitting} />
             {history.length === 0 && (
               <div className="text-center py-16 animate-fade-in">
                 <div className="text-5xl mb-5 opacity-30">🔬</div>

@@ -6,15 +6,44 @@ const depthOptions = [
   { value: 'deep', label: '深度', description: '约 10-20 分钟', icon: '🔍' },
 ]
 
+const ALLOWED_EXTS = ['.pdf', '.md', '.txt', '.csv', '.json', '.docx']
+const MAX_BYTES = 20 * 1024 * 1024 // UPLOAD_MAX_BYTES
+const ACCEPT = ALLOWED_EXTS.join(',')
+
 export default function InputPanel({ onSubmit, isLoading }) {
   const [task, setTask] = useState('')
   const [depth, setDepth] = useState('standard')
   const [useRag, setUseRag] = useState(false)
+  const [files, setFiles] = useState([])        // [{ name, size, file }]
+  const [fileErrors, setFileErrors] = useState([]) // [{ name, message }]
+  const inputRef = useRef(null)
+
+  const addFiles = (selected) => {
+    const errs = []
+    const accepted = []
+    for (const f of selected) {
+      const ext = (f.name.match(/\.[^.]+$/) || [''])[0].toLowerCase()
+      if (!ALLOWED_EXTS.includes(ext)) {
+        errs.push({ name: f.name, message: `不支持的文件类型: ${ext}（支持 ${ALLOWED_EXTS.join(' ')}）` })
+        continue
+      }
+      if (f.size > MAX_BYTES) {
+        errs.push({ name: f.name, message: '文件过大，上限 20MB' })
+        continue
+      }
+      if (!files.some((x) => x.name === f.name)) accepted.push({ name: f.name, size: f.size, file: f })
+    }
+    setFiles((prev) => [...prev, ...accepted])
+    setFileErrors((prev) => [...prev, ...errs])
+  }
+
+  const removeFile = (name) => setFiles((prev) => prev.filter((x) => x.name !== name))
+  const formatSize = (b) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${(b / 1024).toFixed(1)} KB`)
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!task.trim() || isLoading) return
-    onSubmit({ task: task.trim(), depth, useRag })
+    onSubmit({ task: task.trim(), depth, useRag, files })
   }
 
   return (
@@ -40,6 +69,56 @@ export default function InputPanel({ onSubmit, isLoading }) {
             onChange={(e) => setTask(e.target.value)}
             disabled={isLoading}
           />
+        </div>
+
+        {/* Reference files */}
+        <div>
+          <label className="block text-xs font-medium text-[var(--text-muted)] mb-3 uppercase tracking-wider">
+            参考文件（可选）
+          </label>
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept={ACCEPT}
+            className="hidden"
+            onChange={(e) => { addFiles([...e.target.files]); e.target.value = '' }}
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={isLoading}
+            className="w-full p-4 rounded-xl border border-dashed border-[var(--border-subtle)] text-sm text-[var(--text-muted)] hover:border-[var(--border-accent)] hover:text-[var(--text-secondary)] transition-all"
+          >
+            <span className="flex items-center justify-center gap-2">📎 选择文件（PDF / MD / TXT / CSV / JSON / DOCX，单个 ≤ 20MB）</span>
+          </button>
+          {fileErrors.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {fileErrors.map((er, i) => (
+                <li key={i} className="text-xs text-[var(--error)]">{er.name}: {er.message}</li>
+              ))}
+            </ul>
+          )}
+          {files.length > 0 && (
+            <ul className="mt-2 space-y-1.5">
+              {files.map((f) => (
+                <li key={f.name} className="flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border-subtle)]">
+                  <span className="text-sm text-[var(--text-secondary)] truncate">
+                    <span className="text-[var(--text-primary)]">{f.name}</span>
+                    <span className="text-[var(--text-muted)] text-xs ml-2">{formatSize(f.size)}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(f.name)}
+                    disabled={isLoading}
+                    className="text-xs text-[var(--text-muted)] hover:text-[var(--error)] transition-colors"
+                    aria-label={`移除 ${f.name}`}
+                  >移除</button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Depth selector */}
