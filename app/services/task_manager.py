@@ -305,11 +305,20 @@ class TaskManager:
         """Start background research for an existing pre-created task.
 
         Same as start_research but reuses an existing task/workspace instead
-        of creating a new one. Raises KeyError if the task does not exist.
+        of creating a new one. Raises KeyError if the task does not exist;
+        ValueError if the task has already started.
         """
         task_info = self._tasks.get(task_id)
         if not task_info:
             raise KeyError(f"task not found: {task_id}")
+
+        # Transition pending → running atomically (no awaits above this point)
+        # so two concurrent /start calls cannot both schedule _run for the
+        # same task. _run flips status to "running" again at its start
+        # (harmless).
+        if task_info.status in ("running", "completed", "failed"):
+            raise ValueError(f"任务已启动: {task_id}")
+        task_info.status = "running"
 
         from app.config import settings
         from app.services.workspace import WorkspaceManager

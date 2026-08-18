@@ -337,13 +337,22 @@ async def start_prepared_research(
         raise HTTPException(status_code=409, detail="任务已启动")
 
     profile = await get_effective_profile(current_user)
-    await _task_manager.start_prepared_task(
-        task_id,
-        max_iterations=request.max_iterations,
-        fmt=request.format,
-        use_rag=request.use_rag,
-        profile_id=profile["id"],
-    )
+    try:
+        await _task_manager.start_prepared_task(
+            task_id,
+            max_iterations=request.max_iterations,
+            fmt=request.format,
+            use_rag=request.use_rag,
+            profile_id=profile["id"],
+        )
+    except KeyError:
+        # Task vanished between the guard above and the service call (e.g. a
+        # concurrent delete_task). Surface a clean 404, not a 500.
+        raise HTTPException(status_code=404, detail="Task not found")
+    except ValueError:
+        # Atomic guard inside start_prepared_task caught a concurrent
+        # double-start; the pre-check above was stale.
+        raise HTTPException(status_code=409, detail="任务已启动")
     return ResearchResponse(task_id=task_id, status="pending")
 
 
