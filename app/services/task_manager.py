@@ -294,6 +294,52 @@ class TaskManager:
 
         return task_id
 
+    async def start_prepared_task(
+        self,
+        task_id: str,
+        max_iterations: int = 3,
+        fmt: str = "markdown",
+        use_rag: bool = False,
+        profile_id: Optional[str] = None,
+    ) -> str:
+        """Start background research for an existing pre-created task.
+
+        Same as start_research but reuses an existing task/workspace instead
+        of creating a new one. Raises KeyError if the task does not exist.
+        """
+        task_info = self._tasks.get(task_id)
+        if not task_info:
+            raise KeyError(f"task not found: {task_id}")
+
+        from app.config import settings
+        from app.services.workspace import WorkspaceManager
+
+        ws = WorkspaceManager(root_dir=settings.WORKSPACE_ROOT)
+        task_info.workspace_dir = await ws.ensure_workspace(task_id)
+        # Re-sync so any files uploaded after prepare are picked up.
+        task_info.workspace_files = [f["name"] for f in ws.list_files(task_id)]
+
+        # Persist to database (was intentionally NOT persisted at prepare time)
+        try:
+            from app.models.database import _async_session_maker
+
+            if _async_session_maker is not None:
+                async with _async_session_maker() as session:
+                    repo = TaskRepository(session)
+                    await repo.create(TaskModel(
+                        id=task_id,
+                        task_text=task_info.task,
+                        status="pending",
+                    ))
+        except Exception as exc:
+            logger.warning("Failed to persist task to database: %s", exc)
+
+        asyncio.create_task(
+            self._run(task_id, task_info.task, max_iterations, fmt, use_rag, profile_id)
+        )
+        asyncio.create_task(self.save_checkpoint(task_id))
+        return task_id
+
     async def _run(
         self,
         task_id: str,

@@ -246,6 +246,20 @@ class ResearchStartRequest(BaseModel):
     use_rag: bool = Field(default=False, description="Whether to use RAG knowledge base")
 
 
+class PrepareTaskRequest(BaseModel):
+    """Body for creating a task WITHOUT starting the workflow."""
+
+    task: str = Field(..., min_length=1, max_length=5000, description="Research topic")
+
+
+class StartPreparedRequest(BaseModel):
+    """Body for starting an already-prepared (pre-created) task."""
+
+    max_iterations: int = Field(default=3, ge=1, le=10)
+    format: str = Field(default="markdown", pattern=r"^(markdown|pdf|both)$")
+    use_rag: bool = Field(default=False)
+
+
 class HistoryResponse(BaseModel):
     """Response containing list of past tasks."""
 
@@ -290,6 +304,47 @@ async def start_research(
         status="pending",
         started_at=datetime.now(),
     )
+
+
+@app.post("/api/research/prepare", response_model=ResearchResponse)
+async def prepare_research_task(
+    request: PrepareTaskRequest,
+    current_user: Optional[dict] = Depends(get_optional_user),
+) -> ResearchResponse:
+    """Create a research task and provision its workspace WITHOUT starting."""
+    task_id = _task_manager.create_task(request.task)
+
+    from app.config import settings
+    from app.services.workspace import WorkspaceManager
+
+    task_info = _task_manager.get_task(task_id)
+    ws = WorkspaceManager(root_dir=settings.WORKSPACE_ROOT)
+    task_info.workspace_dir = await ws.ensure_workspace(task_id)
+    task_info.workspace_files = [f["name"] for f in ws.list_files(task_id)]
+    return ResearchResponse(task_id=task_id, status="pending")
+
+
+@app.post("/api/research/{task_id}/start", response_model=ResearchResponse)
+async def start_prepared_research(
+    task_id: str,
+    request: StartPreparedRequest,
+    current_user: Optional[dict] = Depends(get_optional_user),
+) -> ResearchResponse:
+    task_info = _task_manager.get_task(task_id)
+    if not task_info:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task_info.status in ("running", "completed", "failed"):
+        raise HTTPException(status_code=409, detail="任务已启动")
+
+    profile = await get_effective_profile(current_user)
+    await _task_manager.start_prepared_task(
+        task_id,
+        max_iterations=request.max_iterations,
+        fmt=request.format,
+        use_rag=request.use_rag,
+        profile_id=profile["id"],
+    )
+    return ResearchResponse(task_id=task_id, status="pending")
 
 
 @app.post("/api/research/{task_id}/upload")
