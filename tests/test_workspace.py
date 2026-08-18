@@ -72,6 +72,36 @@ class TestWorkspaceLifecycle:
                 max_bytes=50,
             )
 
+    @pytest.mark.asyncio
+    async def test_save_upload_enforces_max_files(self, ws):
+        await ws.ensure_workspace("task_max_files")
+        meta1 = await ws.save_upload(
+            "task_max_files",
+            filename="one.md",
+            content=b"# one",
+            max_files=1,
+        )
+        assert meta1["name"] == "one.md"
+        with pytest.raises(ValueError, match="文件数已达上限"):
+            await ws.save_upload(
+                "task_max_files",
+                filename="two.md",
+                content=b"# two",
+                max_files=1,
+            )
+
+    @pytest.mark.asyncio
+    async def test_save_upload_max_files_unlimited_by_default(self, ws):
+        await ws.ensure_workspace("task_max_unlimited")
+        for name in ("a.md", "b.md", "c.md"):
+            meta = await ws.save_upload(
+                "task_max_unlimited",
+                filename=name,
+                content=b"# x",
+            )
+            assert meta["name"] == name
+        assert len(ws.list_files("task_max_unlimited")) == 3
+
     @pytest.mark.parametrize(
         "bad_name",
         [

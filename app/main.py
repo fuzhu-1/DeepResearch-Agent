@@ -313,18 +313,20 @@ async def upload_research_file(
         raise HTTPException(status_code=400, detail="Empty filename")
 
     ws = WorkspaceManager(root_dir=settings.WORKSPACE_ROOT)
-    # Enforce the per-task upload count cap before writing anything.
-    if len(ws.list_files(task_id)) >= settings.UPLOAD_MAX_FILES:
-        raise HTTPException(status_code=413, detail="Too many files")
     try:
         meta = await ws.save_upload(
             task_id,
             filename=file.filename,
             content=content,
             max_bytes=settings.UPLOAD_MAX_BYTES,
+            max_files=settings.UPLOAD_MAX_FILES,
             allowed_exts=tuple(allowed),
         )
     except ValueError as exc:
+        # The per-task file-count cap is a resource limit → 413, the rest are
+        # client errors → 400.
+        if "文件数已达上限" in str(exc):
+            raise HTTPException(status_code=413, detail=str(exc))
         raise HTTPException(status_code=400, detail=str(exc))
 
     # Sync task_info file listing

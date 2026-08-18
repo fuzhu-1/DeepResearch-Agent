@@ -219,10 +219,6 @@ class ReportService:
         except Exception:
             return False
 
-    def _task_dir(self, task_id: str) -> str:
-        """Return the directory path for a given task."""
-        return os.path.join(self._output_dir, task_id)
-
     def _resolve_task_dir(self, task_id: str) -> str:
         """Return the dir where a task's report lives (legacy or workspace)."""
         legacy = os.path.join(self._output_dir, task_id)

@@ -82,12 +82,14 @@ class WorkspaceManager:
         filename: str,
         content: bytes,
         max_bytes: int = 20 * 1024 * 1024,
+        max_files: int = 0,
         allowed_exts: tuple = (".pdf", ".md", ".txt", ".csv", ".json", ".docx"),
     ) -> dict:
         """Validate and persist one uploaded file into the task workspace.
 
         Raises ValueError on unsafe filename / disallowed extension /
-        size overrun. Returns the file metadata dict.
+        size overrun / file-count overrun (when ``max_files`` > 0).
+        Returns the file metadata dict.
         """
         if not filename or filename != os.path.basename(filename):
             raise ValueError(f"非法文件名: {filename!r}")
@@ -106,6 +108,10 @@ class WorkspaceManager:
 
         path = self.workspace_path(task_id)
         os.makedirs(path, exist_ok=True)
+        # Enforce the per-task file-count cap atomically, right before the
+        # write, so concurrent uploads cannot both pass a list-and-write check.
+        if max_files > 0 and len(os.listdir(path)) >= max_files:
+            raise ValueError(f"文件数已达上限: {max_files}")
         dest = os.path.join(path, filename)
         with open(dest, "wb") as fh:
             fh.write(content)

@@ -4,6 +4,8 @@ Tests the full API lifecycle including auth, research, settings,
 knowledge base, and health check endpoints.
 """
 
+import os
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -278,9 +280,12 @@ class TestPdfCache:
 
 
 @pytest.mark.asyncio
-async def test_worker_job_runs_task(monkeypatch):
+async def test_worker_job_runs_task(monkeypatch, tmp_path):
+    from app.config import settings
     from app.services.task_manager import TaskManager
     from app.worker import run_research_job
+
+    monkeypatch.setattr(settings, "WORKSPACE_ROOT", str(tmp_path / "ws"))
 
     async def fake_run(self, task_id, task_text, max_iterations, fmt, use_rag, profile_id):
         self._tasks[task_id].status = "completed"
@@ -290,6 +295,26 @@ async def test_worker_job_runs_task(monkeypatch):
     ctx = {"task_manager": TaskManager()}
     await run_research_job(ctx, "w1", "test", 1, "markdown", False, "default")
     assert ctx["task_manager"]._tasks["w1"].status == "completed"
+
+
+@pytest.mark.asyncio
+async def test_worker_job_provisions_workspace(monkeypatch, tmp_path):
+    """ARQ worker must provision the task workspace before running."""
+    from app.config import settings
+    from app.services.task_manager import TaskManager
+    from app.worker import run_research_job
+
+    monkeypatch.setattr(settings, "WORKSPACE_ROOT", str(tmp_path / "ws"))
+
+    async def fake_run(self, task_id, task_text, max_iterations, fmt, use_rag, profile_id):
+        pass
+
+    monkeypatch.setattr(TaskManager, "_run", fake_run)
+    ctx = {"task_manager": TaskManager()}
+    await run_research_job(ctx, "w_ws", "test", 1, "markdown", False, "default")
+    info = ctx["task_manager"]._tasks["w_ws"]
+    assert info.workspace_dir
+    assert os.path.isdir(info.workspace_dir)
 
 
 class TestWorkspaceAPI:

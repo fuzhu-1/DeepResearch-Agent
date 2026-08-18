@@ -93,14 +93,13 @@ class TaskManager:
     def delete_task(self, task_id: str) -> bool:
         """Remove a task from memory and clean up its workspace directory."""
         removed = self._tasks.pop(task_id, None) is not None
-        if removed:
-            try:
-                from app.config import settings
-                from app.services.workspace import WorkspaceManager
+        try:
+            from app.config import settings
+            from app.services.workspace import WorkspaceManager
 
-                WorkspaceManager(root_dir=settings.WORKSPACE_ROOT).cleanup(task_id)
-            except Exception as exc:
-                logger.warning("Workspace cleanup failed for %s: %s", task_id, exc)
+            WorkspaceManager(root_dir=settings.WORKSPACE_ROOT).cleanup(task_id)
+        except Exception as exc:
+            logger.warning("Workspace cleanup failed for %s: %s", task_id, exc)
         return removed
 
     # ------------------------------------------------------------------
