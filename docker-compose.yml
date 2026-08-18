@@ -1,0 +1,52 @@
+services:
+  # ============================================================================
+  # Main Application
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_DB_PATH=/app/data/chroma_db
+    volumes:
+      # Bind-mount host data so the migrated vector store, runtime config
+      # (embedding/rerank keys) and reports survive container restarts.
+      - ./data:/app/data
+    # Windows Docker Desktop bind mounts may block writes for the non-root
+    # image user; run as root locally so ChromaDB/SQLite can persist.
+    user: "0"
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================================================
+  # Redis (Cache & Session Store)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --save 900 1 --save 300 10 --save 60 10000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis_data:

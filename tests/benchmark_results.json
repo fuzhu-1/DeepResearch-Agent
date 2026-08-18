@@ -1,0 +1,122 @@
+[
+  {
+    "topic": "loop vs graph comparison in agent systems",
+    "index": 1,
+    "status": "completed",
+    "started_at": "2026-07-30T22:19:53.873232",
+    "execution_time_s": 188.2,
+    "token_estimate": 14258,
+    "agent_loop_rounds": 10,
+    "research_data_count": 8,
+    "sources_count": 25,
+    "report_length_chars": 11641,
+    "tool_calls_total": 18,
+    "tool_calls_success": 18,
+    "tool_calls_failed": 0,
+    "errors": [],
+    "report_preview": "# 从循环到图：AI Agent系统架构范式转移研究报告\n\n## 摘要\n\n本报告系统研究了2024-2026年AI Agent系统中循环（Loop）架构与图（Graph）架构的对比、演进趋势及选型策略。研究发现，行业正经历从“Loop工程”向“Graph工程”的范式转移：Loop架构（如ReAct循环）作为Agent的基础执行单元，适合可验证、可重试的简单任务；Graph架构（如LangGraph）通过节点、边和显式状态管理，为多步骤、需审计的生产级场景提供了结构化编排能力。2025年，LangGraph发布1.0 GA版本，GitHub星标达15.5k，成为图编排的代表框架 [来源: CrewAI vs LangChain 2026](https://www.nxcode.io/zh/resources/news/crewai-vs-langchain-ai-agent-framework-comparison-2026)。性能基准测试显示，Graph架构在复杂多智能体交互中平均响应时间为5.95秒，而Loop在简单任务中延迟更低 [来源: Galileo AI](https://g...",
+    "llm_judge": {
+      "factual_accuracy": 7.5,
+      "structure_completeness": 8.0,
+      "citation_quality": 6.0,
+      "overall": 7.2,
+      "feedback": "报告内容有据可查，但部分数据（如GitHub星标）未提供直接来源，且引用链接不完整。结构基本完整，但缺少明确的结论部分。"
+    }
+  },
+  {
+    "topic": "multi-agent systems vs single agent systems comparison",
+    "index": 2,
+    "status": "completed",
+    "started_at": "2026-07-30T22:23:03.588090",
+    "execution_time_s": 194.1,
+    "token_estimate": 11935,
+    "agent_loop_rounds": 8,
+    "research_data_count": 6,
+    "sources_count": 35,
+    "report_length_chars": 11713,
+    "tool_calls_total": 14,
+    "tool_calls_success": 14,
+    "tool_calls_failed": 0,
+    "errors": [],
+    "report_preview": "# 多智能体系统与单智能体系统对比研究报告：架构、性能与适用场景的深度剖析\n\n## 摘要\n\n本报告旨在全面、深入地对比分析多智能体系统（Multi-Agent Systems, MAS）与单智能体系统（Single-Agent Systems, SAS）在架构设计、性能表现、应用场景及未来趋势上的核心差异。基于2025-2026年的最新研究数据与行业报告，本研究发现：在复杂、动态的协作任务中，多智能体系统的任务完成率较单智能体系统提升高达4.2倍，错误恢复能力增强67%[来源: 腾讯云开发者社区](https://developer.cloud.tencent.com/article/2703232)。然而，这种性能优势伴随着显著的代价——多智能体系统的Token消耗比单智能体系统高出约4倍，主要源于协调通信与冗余机制[来源: 单智能体vs多智能体系统区别对比：性能成本全面分析指南2025](https://www.betteryeah.com/blog/single-agent-vs-multi-agent-system-comparison-guide-2025)。在特定顺序性任务...",
+    "llm_judge": {
+      "factual_accuracy": 8.0,
+      "structure_completeness": 7.5,
+      "citation_quality": 7.0,
+      "overall": 7.5,
+      "feedback": "报告结构完整，包含摘要、引言和初步分析，但缺少明确的结论和参考文献部分。事实性数据有来源支持，但部分引用（如腾讯云开发者社区）权威性一般，且未提供完整URL。整体质量良好，建议补充完整结构和更权威的引用。"
+    }
+  },
+  {
+    "topic": "what is pi agent in 2026",
+    "index": 3,
+    "status": "completed",
+    "started_at": "2026-07-30T22:26:19.846469",
+    "execution_time_s": 317.7,
+    "token_estimate": 13425,
+    "agent_loop_rounds": 9,
+    "research_data_count": 7,
+    "sources_count": 25,
+    "report_length_chars": 10172,
+    "tool_calls_total": 17,
+    "tool_calls_success": 17,
+    "tool_calls_failed": 0,
+    "errors": [],
+    "report_preview": "好的，遵照您的要求，我将以专业研究报告撰写专家的身份，基于您提供的研究数据，撰写一份关于“Pi Agent in 2026”的全面、深入的研究报告。\n\n***\n\n# 2026年Pi Agent深度研究报告：极简主义AI代理的哲学、实践与未来\n\n## 摘要\n\n本报告旨在全面、深入地分析2026年AI代理领域中的一个独特项目——Pi Agent。Pi Agent以其“极简主义”的设计哲学在众多AI代理框架中独树一帜，它并非追求构建更强大的大语言模型（LLM），而是致力于打造一个最小化、可控且可扩展的编码代理运行时环境。报告发现，Pi Agent的核心价值在于其精巧的架构设计，通过四个核心包和七层管道，实现了对AI代理行为的精细控制。然而，其营销策略存在过度宣称的争议，且面临社区稳定性问题。在2026年AI代理市场预计达到万亿美元规模、企业采用率激增的背景下，Pi Agent的定位显得尤为特殊：它并非面向大众的通用解决方案，而是为追求极致控制力和理解代理底层架构的开发者与研究者设计的专业工具。报告指出，Pi Agent面临长期自主性、间接提示注入等通用技术挑战，但其极简架构在安全性和可控性方...",
+    "llm_judge": {
+      "factual_accuracy": 6.5,
+      "structure_completeness": 8.0,
+      "citation_quality": 0.0,
+      "overall": 4.8,
+      "feedback": "报告结构完整，包含摘要、分析等部分，但缺乏具体数据来源和引用，且对Pi Agent的描述缺乏可验证的事实依据，营销策略争议等断言无出处。"
+    }
+  },
+  {
+    "topic": "AI agent key trends and development directions in 2026",
+    "index": 4,
+    "status": "completed",
+    "started_at": "2026-07-30T22:31:39.340116",
+    "execution_time_s": 203.9,
+    "token_estimate": 14800,
+    "agent_loop_rounds": 10,
+    "research_data_count": 8,
+    "sources_count": 25,
+    "report_length_chars": 13741,
+    "tool_calls_total": 18,
+    "tool_calls_success": 18,
+    "tool_calls_failed": 0,
+    "errors": [],
+    "report_preview": "# 2026年AI代理关键趋势与发展方向研究报告\n\n## 摘要\n\n本报告系统梳理了2026年AI代理（AI Agent）领域的关键趋势、技术突破、行业应用、竞争格局及监管政策。研究发现，2026年全球AI代理市场规模预计达到117.8亿美元，复合年增长率高达46.61%，北美市场占据全球38%的份额[来源: Fortune Business Insights](https://www.fortunebusinessinsights.com/zh/ai-agents-market-111574)。市场格局从OpenAI一家独大转向多强并立，谷歌Gemini市场份额飙升至21.5%，专业选手合计占15-20%[来源: almcorp.com](https://almcorp.com/zh-CN/blog/google-gemini-vs-chatgpt-market-share-2026)。核心技术方面，多智能体协作、推理成本内化、原生多模态处理取得突破性进展，AgentFugue框架在GAIA基准测试中以73.2%完成率刷新纪录[来源: 搜狐](https://www.sohu.com/...",
+    "llm_judge": {
+      "factual_accuracy": 7.0,
+      "structure_completeness": 8.0,
+      "citation_quality": 5.0,
+      "overall": 6.7,
+      "feedback": "报告结构完整，包含摘要、市场数据、竞争格局和技术进展，但部分引用URL不完整（如搜狐链接截断），且未提供参考文献列表。事实准确性较好，但需验证所有数据来源的权威性。"
+    }
+  },
+  {
+    "topic": "LangGraph vs CrewAI vs AutoGen comparison",
+    "index": 5,
+    "status": "completed",
+    "started_at": "2026-07-30T22:35:05.002202",
+    "execution_time_s": 251.9,
+    "token_estimate": 15459,
+    "agent_loop_rounds": 9,
+    "research_data_count": 7,
+    "sources_count": 36,
+    "report_length_chars": 10947,
+    "tool_calls_total": 19,
+    "tool_calls_success": 19,
+    "tool_calls_failed": 0,
+    "errors": [],
+    "report_preview": "# LangGraph vs CrewAI vs AutoGen：2026年AI Agent框架深度对比研究报告\n\n## 摘要\n\n本报告对2025-2026年AI Agent开发领域三大主流框架——LangGraph、CrewAI和AutoGen进行了全面、深入的对比分析。研究发现，三个框架在设计哲学、技术架构、生产就绪度和适用场景上存在显著差异。LangGraph凭借其图状态机架构、强大的状态持久化能力和企业级生产支持，已成为生产级Agent开发的事实标准，GitHub星标超33,900，月下载量达3,450万次，在千人以上企业生产架构文档中引用率达34%[来源: 2026年AI Agent框架全景对比](https://adg.csdn.net/6a52e153662f9a54cb8e7c68.html)。CrewAI以角色驱动协作模式著称，GitHub星标超52,800，月下载量约520万次，凭借低上手门槛和优秀的文档质量吸引了大量中小团队开发者[来源: 同上]。AutoGen由微软开发，在GitHub上拥有约42K星标，但已于2026年2月发布v1.0后进入维护模式，微软已将活...",
+    "llm_judge": {
+      "factual_accuracy": 7.5,
+      "structure_completeness": 6.0,
+      "citation_quality": 5.0,
+      "overall": 6.2,
+      "feedback": "报告结构基本完整，包含摘要和部分分析，但缺少明确的结论和参考文献列表。事实数据（如GitHub星标、下载量）有具体来源，但部分数据（如34%引用率）需核实。引用仅提供一个来源，且URL格式不完整（末尾被截断），整体引用质量一般。"
+    }
+  }
+]

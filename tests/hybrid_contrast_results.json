@@ -1,0 +1,379 @@
+{
+  "date": "2026-08-05T01:23:51.651359",
+  "top_k": 3,
+  "total": 9,
+  "all": {
+    "dense": 6,
+    "hybrid": 6
+  },
+  "keyword": {
+    "dense": 5,
+    "hybrid": 5
+  },
+  "semantic": {
+    "dense": 1,
+    "hybrid": 1
+  },
+  "results": [
+    {
+      "query": "HNSW",
+      "expected": "hnsw.txt",
+      "is_keyword": true,
+      "dense_hit": true,
+      "hybrid_hit": true,
+      "dense_top1": true,
+      "hybrid_top1": true,
+      "dense_results": [
+        {
+          "src": "hnsw.txt",
+          "score": 0.166
+        },
+        {
+          "src": "openhands_review.txt",
+          "score": -0.87
+        },
+        {
+          "src": "noise_12.txt",
+          "score": -0.885
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "hnsw.txt",
+          "score": 0.966,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_1.txt",
+          "score": 0.005,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_14.txt",
+          "score": 0.004,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "DiskANN",
+      "expected": "diskann.txt",
+      "is_keyword": true,
+      "dense_hit": true,
+      "hybrid_hit": true,
+      "dense_top1": true,
+      "hybrid_top1": true,
+      "dense_results": [
+        {
+          "src": "diskann.txt",
+          "score": 0.063
+        },
+        {
+          "src": "noise_dk_5.txt",
+          "score": -0.685
+        },
+        {
+          "src": "noise_dk_13.txt",
+          "score": -0.694
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "diskann.txt",
+          "score": 0.998,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_dk_11.txt",
+          "score": 0.015,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_dk_0.txt",
+          "score": 0.014,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "PQ 量化",
+      "expected": "pq.txt",
+      "is_keyword": true,
+      "dense_hit": true,
+      "hybrid_hit": true,
+      "dense_top1": true,
+      "hybrid_top1": true,
+      "dense_results": [
+        {
+          "src": "pq.txt",
+          "score": 0.044
+        },
+        {
+          "src": "noise_pq_9.txt",
+          "score": -0.679
+        },
+        {
+          "src": "noise_pq_12.txt",
+          "score": -0.68
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "pq.txt",
+          "score": 0.674,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_pq_4.txt",
+          "score": 0.001,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_pq_12.txt",
+          "score": 0.001,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "BM25",
+      "expected": "hybrid_rag.txt",
+      "is_keyword": true,
+      "dense_hit": false,
+      "hybrid_hit": false,
+      "dense_top1": false,
+      "hybrid_top1": false,
+      "dense_results": [
+        {
+          "src": "noise_rr_13.txt",
+          "score": -0.649
+        },
+        {
+          "src": "noise_rr_5.txt",
+          "score": -0.654
+        },
+        {
+          "src": "noise_rr_14.txt",
+          "score": -0.662
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "noise_rr_13.txt",
+          "score": -0.649,
+          "type": "dense"
+        },
+        {
+          "src": "noise_rr_5.txt",
+          "score": -0.654,
+          "type": "dense"
+        },
+        {
+          "src": "noise_rr_14.txt",
+          "score": -0.662,
+          "type": "dense"
+        }
+      ]
+    },
+    {
+      "query": "Reranker",
+      "expected": "rerank.txt",
+      "is_keyword": true,
+      "dense_hit": true,
+      "hybrid_hit": true,
+      "dense_top1": true,
+      "hybrid_top1": true,
+      "dense_results": [
+        {
+          "src": "rerank.txt",
+          "score": -0.015
+        },
+        {
+          "src": "noise_rr_13.txt",
+          "score": -0.515
+        },
+        {
+          "src": "noise_rr_4.txt",
+          "score": -0.529
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "rerank.txt",
+          "score": 0.839,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_rr_4.txt",
+          "score": 0.008,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_rr_3.txt",
+          "score": 0.008,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "OpenHands",
+      "expected": "openhands_review.txt",
+      "is_keyword": true,
+      "dense_hit": true,
+      "hybrid_hit": true,
+      "dense_top1": true,
+      "hybrid_top1": true,
+      "dense_results": [
+        {
+          "src": "openhands_review.txt",
+          "score": -0.3
+        },
+        {
+          "src": "hnsw.txt",
+          "score": -0.865
+        },
+        {
+          "src": "noise_oh_0.txt",
+          "score": -0.87
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "openhands_review.txt",
+          "score": 0.256,
+          "type": "reranked"
+        },
+        {
+          "src": "hnsw.txt",
+          "score": 0.001,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_oh_0.txt",
+          "score": 0.001,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "怎么在高维空间里快速找到相似的向量",
+      "expected": "hnsw.txt",
+      "is_keyword": false,
+      "dense_hit": false,
+      "hybrid_hit": false,
+      "dense_top1": false,
+      "hybrid_top1": false,
+      "dense_results": [
+        {
+          "src": "noise_dk_2.txt",
+          "score": -0.308
+        },
+        {
+          "src": "noise_dk_4.txt",
+          "score": -0.31
+        },
+        {
+          "src": "noise_dk_11.txt",
+          "score": -0.315
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "noise_dk_2.txt",
+          "score": 0.066,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_dk_5.txt",
+          "score": 0.056,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_dk_3.txt",
+          "score": 0.05,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "大规模向量怎么低成本存到磁盘上",
+      "expected": "diskann.txt",
+      "is_keyword": false,
+      "dense_hit": false,
+      "hybrid_hit": false,
+      "dense_top1": false,
+      "hybrid_top1": false,
+      "dense_results": [
+        {
+          "src": "noise_dk_13.txt",
+          "score": 0.233
+        },
+        {
+          "src": "noise_dk_14.txt",
+          "score": 0.216
+        },
+        {
+          "src": "noise_dk_1.txt",
+          "score": 0.213
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "noise_dk_2.txt",
+          "score": 0.408,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_dk_8.txt",
+          "score": 0.37,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_dk_5.txt",
+          "score": 0.368,
+          "type": "reranked"
+        }
+      ]
+    },
+    {
+      "query": "向量和关键词两种检索怎么结合",
+      "expected": "hybrid_rag.txt",
+      "is_keyword": false,
+      "dense_hit": true,
+      "hybrid_hit": true,
+      "dense_top1": true,
+      "hybrid_top1": true,
+      "dense_results": [
+        {
+          "src": "hybrid_rag.txt",
+          "score": 0.401
+        },
+        {
+          "src": "noise_rag_1.txt",
+          "score": 0.222
+        },
+        {
+          "src": "noise_rag_2.txt",
+          "score": 0.219
+        }
+      ],
+      "hybrid_results": [
+        {
+          "src": "hybrid_rag.txt",
+          "score": 0.993,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_rag_2.txt",
+          "score": 0.769,
+          "type": "reranked"
+        },
+        {
+          "src": "noise_rag_5.txt",
+          "score": 0.767,
+          "type": "reranked"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+*.egg-info/
+dist/
+build/
+node_modules/
+data/chroma_db/
+data/reports/
+data/uploads/
+data/research.db
+data/checkpoints.db
+data/eval/
+data/config/
+docs/
+.claude/
+# Per-task research workspaces
+data/workspaces/

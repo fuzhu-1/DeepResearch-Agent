@@ -1,0 +1,92 @@
+{
+  "date": "2026-08-05T01:20:55.176879",
+  "top_k": 3,
+  "total_queries": 9,
+  "dense_topk_hit": 9,
+  "hybrid_topk_hit": 9,
+  "dense_top1_hit": 8,
+  "hybrid_top1_hit": 8,
+  "results": [
+    {
+      "query": "开源项目代码审查怎么做",
+      "expected_source": "openhands",
+      "is_keyword_query": false,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "大厂实习面试准备",
+      "expected_source": "大厂实习入职攻略",
+      "is_keyword_query": false,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "多智能体系统架构设计",
+      "expected_source": "Agent框架对比",
+      "is_keyword_query": false,
+      "dense_top1_hit": false,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "检索增强生成的基本流程",
+      "expected_source": "向量检索",
+      "is_keyword_query": false,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "Chroma 和 FAISS 定位区别",
+      "expected_source": "向量存储选型",
+      "is_keyword_query": false,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "ChromaDB 对比",
+      "expected_source": "向量数据库对比",
+      "is_keyword_query": true,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": false,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "PQ 量化",
+      "expected_source": "向量检索",
+      "is_keyword_query": true,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "HNSW 索引",
+      "expected_source": "向量数据库对比",
+      "is_keyword_query": true,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    },
+    {
+      "query": "LangGraph",
+      "expected_source": "Agent框架对比",
+      "is_keyword_query": true,
+      "dense_top1_hit": true,
+      "dense_topk_hit": true,
+      "hybrid_top1_hit": true,
+      "hybrid_topk_hit": true
+    }
+  ]
+}
