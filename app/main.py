@@ -303,7 +303,7 @@ async def upload_research_file(
     if not task_info:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    from app.services.workspace import WorkspaceManager
+    from app.services.workspace import FileCountLimitExceeded, WorkspaceManager
 
     allowed = [e.strip() for e in settings.UPLOAD_ALLOWED_EXTS.split(",")]
     content = await file.read()
@@ -322,11 +322,11 @@ async def upload_research_file(
             max_files=settings.UPLOAD_MAX_FILES,
             allowed_exts=tuple(allowed),
         )
+    except FileCountLimitExceeded as exc:
+        # The per-task file-count cap is a resource limit → 413.
+        raise HTTPException(status_code=413, detail=str(exc))
     except ValueError as exc:
-        # The per-task file-count cap is a resource limit → 413, the rest are
-        # client errors → 400.
-        if "文件数已达上限" in str(exc):
-            raise HTTPException(status_code=413, detail=str(exc))
+        # Everything else is a client error → 400.
         raise HTTPException(status_code=400, detail=str(exc))
 
     # Sync task_info file listing

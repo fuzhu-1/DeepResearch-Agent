@@ -387,11 +387,11 @@ class TestWorkspaceAPI:
         assert "保留命名" in up.json()["detail"]
 
     @pytest.mark.asyncio
-    async def test_upload_respects_max_files_cap(self, client, db, tmp_path):
+    async def test_upload_respects_max_files_cap(self, client, db, tmp_path, monkeypatch):
         """Uploading beyond UPLOAD_MAX_FILES is rejected."""
         from app.config import settings
         settings.WORKSPACE_ROOT = str(tmp_path / "ws")
-        settings.UPLOAD_MAX_FILES = 2
+        monkeypatch.setattr(settings, "UPLOAD_MAX_FILES", 2)
 
         resp = await client.post("/api/research", json={
             "task": "上传数量上限",
@@ -415,6 +415,3 @@ class TestWorkspaceAPI:
             files={"file": ("three.md", b"# three", "text/markdown")},
         )
         assert third.status_code == 413
-
-        # Restore the default for other tests in this module.
-        settings.UPLOAD_MAX_FILES = 10
