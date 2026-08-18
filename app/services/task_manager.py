@@ -147,10 +147,10 @@ class TaskManager:
     # ------------------------------------------------------------------
 
     async def save_checkpoint(self, task_id: str) -> None:
-        """Persist current task state as a checkpoint (best-effort).
+        """Persist current task state to the business database (best-effort).
 
-        Called after each completed workflow node so a service restart
-        can resume from the last checkpoint.
+        Called after each completed workflow node so task rows stay
+        current across restarts.
         """
         task_info = self._tasks.get(task_id)
         if not task_info:
