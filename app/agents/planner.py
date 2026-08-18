@@ -21,7 +21,7 @@ class PlannerAgent(BaseAgent):
         from app.utils.date_hint import today_hint
         from app.utils.workspace_context import build_workspace_instruction
 
-        tools_desc = '"search"（网络搜索）、"browse"（深度阅读指定页面）、"analyze"（数据分析和综合）'
+        tools_desc = '"search"（网络搜索）、"browse"（深度阅读指定页面）、"analyze"（数据分析和综合）、"read_workspace"（读取工作目录中的参考文件）'
         if self.use_rag:
             tools_desc += '、"rag"（从知识库检索）'
 

@@ -8,11 +8,12 @@ import logging
 from typing import Any, Dict, List
 
 from app.tools.base import BaseTool, ToolResult
-from app.tools.search import SearchTool
 from app.tools.browser import BrowserTool
-from app.tools.python_executor import DisabledPythonTool, PythonTool
 from app.tools.memory import MemoryTool
+from app.tools.python_executor import DisabledPythonTool, PythonTool
 from app.tools.rag_retriever import RAGRetrieverTool
+from app.tools.search import SearchTool
+from app.tools.workspace_reader import WorkspaceReaderTool
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ _DEFAULT_TOOL_NAME_MAP: Dict[str, str] = {
     "browse": "browse",
     "analyze": "analyze",
     "rag": "rag",
+    "read_workspace": "read_workspace",
 }
 
 
@@ -53,6 +55,7 @@ class ToolRouter:
             self.register("analyze", DisabledPythonTool())
         self.register("memory", MemoryTool())
         self.register("rag", RAGRetrieverTool())
+        self.register("read_workspace", WorkspaceReaderTool())
 
     def register(self, name: str, tool: BaseTool) -> None:
         """Register a tool under *name*."""

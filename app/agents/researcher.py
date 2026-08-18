@@ -218,7 +218,7 @@ class ResearcherAgent(BaseAgent):
         if tools is None:
             return f"Error: No ToolRouter available for '{tool_name}'."
         try:
-            if tool_name == "analyze":
+            if tool_name in ("analyze", "read_workspace"):
                 params = {**params, "workspace_dir": workspace_dir}
             result = await tools.execute(tool_name, **params)
             return result.data if result.success else f"Error: {result.error}"
@@ -239,6 +239,9 @@ class ResearcherAgent(BaseAgent):
             }
         if tool_name == "rag":
             return {"action": "retrieve", "query": current_task.description, "k": 5}
+        if tool_name == "read_workspace":
+            filename = _extract_filename(current_task.description)
+            return {"filename": filename if filename else current_task.description}
         return {}
 
     @staticmethod
@@ -350,6 +353,16 @@ def _extract_url(description: str) -> Optional[str]:
     url_pattern = r"https?://[^\s,;]+"
     match = re.search(url_pattern, description)
     return match.group(0) if match else None
+
+
+def _extract_filename(description: str) -> Optional[str]:
+    """Extract a workspace filename from the subtask description if present.
+
+    Looks for a quoted filename or a word ending in a common document
+    extension (md, txt, csv, json, pdf, docx).
+    """
+    quoted = re.search(r"['\"]?([A-Za-z0-9_\-.一-鿿]+\.(?:md|txt|csv|json|pdf|docx))['\"]?", description)
+    return quoted.group(1) if quoted else None
 
 
 def _generate_analysis_code(description: str) -> str:
