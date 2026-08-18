@@ -299,3 +299,38 @@ class TestReportService:
         retrieved = await svc.get_report("task_crossdrive", fmt="markdown")
         assert retrieved is not None
         assert "Cross Drive Report" in retrieved
+
+    @pytest.mark.asyncio
+    async def test_get_report_ignores_metadata_path_inside_nonexistent(self, tmp_path):
+        """Forged metadata pointing inside the task dir but to a non-existent
+        file must not break retrieval of the real report."""
+        from app.config import settings
+        from app.services.workspace import WorkspaceManager
+
+        ws_root = str(tmp_path / "ws")
+        settings.WORKSPACE_ROOT = ws_root
+        svc = ReportService(output_dir=os.path.join(str(tmp_path), "reports"))
+        ws = WorkspaceManager(root_dir=ws_root)
+        ws_dir = await ws.ensure_workspace("task_missing_meta")
+        # A real generated report in the workspace.
+        await svc.save_report(
+            task_id="task_missing_meta",
+            content="# Real Report\n\nGenerated body",
+            fmt="markdown",
+            workspace_dir=ws_dir,
+        )
+        # Forge metadata.json with a markdown_path inside the task dir that
+        # resolves to a non-existent file (never written). This exercises the
+        # false-inside case of _path_within (inside the dir, nothing there).
+        forged = {
+            "report_id": "rp_forged",
+            "task_id": "task_missing_meta",
+            "markdown_path": os.path.join(ws_dir, "not_written.md"),
+        }
+        with open(os.path.join(ws_dir, "metadata.json"), "w", encoding="utf-8") as fh:
+            import json
+            json.dump(forged, fh)
+        retrieved = await svc.get_report("task_missing_meta", fmt="markdown")
+        assert retrieved is not None
+        assert "Real Report" in retrieved
+        assert "not_written" not in retrieved

@@ -101,6 +101,8 @@ class WorkspaceManager:
         # ReportService into the same directory — reserve those names so an
         # upload cannot forge or shadow report files. NTFS is case-insensitive,
         # so compare lowercased (consistent with the extension check below).
+        # NOTE: any future fixed filename written into a workspace by the
+        # system must be added to this reservation list.
         lower = filename.lower()
         if lower in ("metadata.json", "task_name.txt") or lower.startswith("rp_"):
             raise ValueError(f"文件名与报告保留命名冲突: {filename!r}")

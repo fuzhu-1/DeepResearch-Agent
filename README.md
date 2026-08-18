@@ -28,6 +28,7 @@ DeepResearch-Agent 是一个基于多 Agent 协作架构的自动化研究分析
 | 🛠 自定义 Skills | 用户创建/编辑/启停结构化技能，按触发词注入对应 Agent 的 system prompt |
 | 👤 用户特化 Agent | 用户档案（写作风格/领域/模型/附加指令）+ 技能按用户隔离 |
 | 🔄 自进化模块 | 任务复盘提炼经验，生成技能草稿，用户确认后生效 |
+| 📁 会话工作目录 | 每任务隔离工作目录 + 参考文件上传，路径与文件清单注入 Agent 提示词 |
 
 ---
 
@@ -37,6 +38,7 @@ DeepResearch-Agent 是一个基于多 Agent 协作架构的自动化研究分析
 
 - 上传的参考文件（PDF/Markdown/TXT/CSV/JSON/DOCX）复制到该目录；
 - 工作目录路径与文件清单自动注入各 Agent 的提示词，Agent 会优先阅读参考文件；
+- 研究过程中，Agent 可通过 read_workspace 工具读取工作目录中的参考文件内容；
 - 最终报告（Markdown/PDF）保存到该目录；
 - API：`POST /api/research/{task_id}/upload` 上传附件，`GET /api/research/{task_id}/workspace` 浏览文件。
 
@@ -148,6 +150,8 @@ docker-compose up --build
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/api/research` | 发起研究任务（支持 RAG 知识库开关） |
+| POST | `/api/research/{id}/upload` | 上传参考文件到任务工作目录 |
+| GET | `/api/research/{id}/workspace` | 浏览任务工作目录文件清单 |
 | GET | `/api/research/{id}/stream` | SSE 实时流，推送 agent_status / report_chunk / completed 等事件 |
 | GET | `/api/research/{id}` | 查询任务状态 |
 | GET | `/api/reports/{id}` | 获取报告文件（Markdown/PDF） |
@@ -184,6 +188,19 @@ docker-compose up --build
 
 
 ## 近期新增功能
+
+### 2026年8月 — 会话工作目录与参考文件上传
+
+- **每任务隔离工作目录**: 每个研究任务自动创建 `data/workspaces/<task_id>/`，上传的参考文件（PDF/MD/TXT/CSV/JSON/DOCX）复制到该目录
+- **环境注入**: 工作目录路径与文件清单自动注入 Planner/Researcher/Writer 的提示词；PythonTool 沙箱暴露 `WORKSPACE_DIR` 供分析代码引用
+- **报告落工作目录**: 最终报告（Markdown/PDF）与参考文件同目录存放
+- **上传安全**: 文件名/扩展名白名单/大小三重校验，保留报告命名空间（`metadata.json`/`task_name.txt`/`rp_*`），拒绝路径穿越与目录逃逸
+- **API**: `POST /api/research/{id}/upload` 上传附件，`GET /api/research/{id}/workspace` 浏览工作目录
+- **检索兼容**: 报告读取自动回退到工作目录，历史报告（`data/reports/`）不受影响
+- **read_workspace 工具**: 研究 Agent 可通过 `read_workspace` 工具直接读取上传的参考文件内容
+- **上传文件数上限**: `UPLOAD_MAX_FILES` 在服务层原子性强制，超限返回 413
+- **ARQ worker 工作目录**: ARQ worker 执行路径同样使用每任务工作目录
+- **生命周期清理**: 删除任务（含重启后不在内存的历史任务）时同步清理工作目录
 
 ### 2026年7月 — 核心 Agent 性能优化（基准测试提升 80%）
 
@@ -251,21 +268,31 @@ deep-research-agent/
 │   │   └── retriever.py         # RAG 检索器
 │   ├── services/
 │   │   ├── llm_service.py       # LLM 调用封装（OpenAI/Anthropic）
-│   │   ├── research_service.py  # 研究任务生命周期管理
-│   │   └── report_service.py    # 报告生成（Markdown + PDF）
+│   │   ├── task_manager.py      # 研究任务生命周期管理（创建/执行/事件/持久化）
+│   │   ├── report_service.py    # 报告生成（Markdown + PDF）
+│   │   ├── workspace.py         # WorkspaceManager：每任务隔离工作目录（创建/清理/上传/清单）
+│   │   ├── profile_service.py   # 用户档案与模型选择
+│   │   ├── skill_service.py     # 技能匹配与注入
+│   │   ├── evolution_service.py # 任务复盘 → 技能草稿
+│   │   └── config_service.py    # 运行时 LLM 配置管理
 │   ├── tools/
 │   │   ├── base.py              # BaseTool 基类
-│   │   ├── search.py            # 搜索工具（Tavily）
+│   │   ├── search.py            # 搜索工具（Tavily/DuckDuckGo/GitHub）
 │   │   ├── browser.py           # 网页浏览工具
-│   │   ├── python_executor.py   # Python 代码执行工具
+│   │   ├── python_executor.py   # Python 代码执行工具（受限沙箱）
 │   │   ├── memory.py            # 记忆读写工具
 │   │   ├── rag_retriever.py     # RAG 检索工具
+│   │   ├── workspace_reader.py  # 工作目录文件读取工具（read_workspace）
 │   │   └── router.py            # Tool Router 路由层
 │   ├── utils/
 │   │   ├── llm.py               # LLM 工具函数
 │   │   ├── logger.py            # 结构化日志
 │   │   ├── markdown_utils.py    # Markdown 处理工具
-│   │   └── pdf_utils.py         # PDF 生成工具（ReportLab）
+│   │   ├── pdf_utils.py         # PDF 生成工具（ReportLab）
+│   │   ├── date_hint.py         # 当前日期提示（注入 Agent prompt）
+│   │   ├── workspace_context.py # 工作目录环境指令构建（注入 Agent prompt）
+│   │   ├── citation_validator.py # 引用来源校验
+│   │   └── grounding.py         # 论断-证据基础校验
 │   ├── workflow/
 │   │   ├── graph.py             # LangGraph 工作流图定义
 │   │   ├── nodes.py             # 工作流节点函数（含 RAG 引用来源收集）
@@ -291,7 +318,9 @@ deep-research-agent/
 │   ├── chroma_db/               # ChromaDB 持久化数据
 │   ├── knowledge/               # Knowledge Memory 存储
 │   ├── reports/                 # 生成的报告文件
-│   └── uploads/                 # 用户上传文件
+│   ├── uploads/                 # 用户上传文件
+│   ├── workspaces/              # 每任务隔离工作目录（含上传附件与报告）
+│   └── checkpoints.db           # LangGraph 检查点（断点续跑）
 ├── tests/
 │   ├── conftest.py              # 测试配置与 Fixtures
 │   ├── test_agents.py           # Agent 单元测试
@@ -299,8 +328,21 @@ deep-research-agent/
 │   ├── test_rag.py              # RAG 系统测试
 │   ├── test_tools.py            # Tool 系统测试
 │   ├── test_workflow.py         # 工作流测试
+│   ├── test_workspace.py        # 工作目录管理测试
+│   ├── test_workspace_context.py # 工作目录提示词注入测试
+│   ├── test_workspace_reader.py # 工作目录文件读取工具测试
 │   ├── test_report_service.py   # 报告服务测试
-│   ├── test_research_service.py # 研究服务测试
+│   ├── test_integration_api.py  # API 集成测试
+│   ├── test_skills.py           # 技能系统测试
+│   ├── test_evolution.py        # 进化模块测试
+│   ├── test_profile.py          # 用户档案测试
+│   ├── test_auth.py             # 认证测试
+│   ├── test_settings.py         # 配置测试
+│   ├── test_database.py         # 数据库测试
+│   ├── test_checkpoint.py       # 检查点测试
+│   ├── test_citation_validator.py # 引用校验测试
+│   ├── test_grounding.py        # 论断-证据校验测试
+│   ├── test_search_backends.py  # 搜索后端测试
 │   ├── test_middleware.py       # 中间件测试
 │   ├── test_logger.py           # 日志测试
 │   ├── test_markdown_utils.py   # Markdown 工具测试
@@ -318,7 +360,7 @@ deep-research-agent/
 
 ## 测试
 
-项目包含 **207 个测试用例**，覆盖核心功能模块：
+项目包含 **437 个测试用例**，覆盖核心功能模块：
 
 ```bash
 # 运行全部测试
