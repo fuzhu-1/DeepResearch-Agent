@@ -21,6 +21,7 @@ export default function InputPanel({ onSubmit, isLoading }) {
   const addFiles = (selected) => {
     const errs = []
     const accepted = []
+    setFileErrors([])
     for (const f of selected) {
       const ext = (f.name.match(/\.[^.]+$/) || [''])[0].toLowerCase()
       if (!ALLOWED_EXTS.includes(ext)) {
@@ -31,13 +32,16 @@ export default function InputPanel({ onSubmit, isLoading }) {
         errs.push({ name: f.name, message: '文件过大，上限 20MB' })
         continue
       }
-      if (!files.some((x) => x.name === f.name)) accepted.push({ name: f.name, size: f.size, file: f })
+      if (!files.some((x) => x.name === f.name) && !accepted.some((x) => x.name === f.name)) accepted.push({ name: f.name, size: f.size, file: f })
     }
     setFiles((prev) => [...prev, ...accepted])
     setFileErrors((prev) => [...prev, ...errs])
   }
 
-  const removeFile = (name) => setFiles((prev) => prev.filter((x) => x.name !== name))
+  const removeFile = (name) => {
+    setFiles((prev) => prev.filter((x) => x.name !== name))
+    setFileErrors((prev) => prev.filter((x) => x.name !== name))
+  }
   const formatSize = (b) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${(b / 1024).toFixed(1)} KB`)
 
   const handleSubmit = (e) => {
