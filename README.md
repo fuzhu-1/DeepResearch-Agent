@@ -13,7 +13,9 @@
 DeepResearch-Agent 是一个基于多 Agent 协作架构的自动化研究分析系统。用户输入研究课题，系统自动完成：任务拆解 → 资料搜索 → 网页深度阅读 → 知识整理 → 报告撰写 → 质量审查的完整闭环。
 
 ### 演示
-<video controls src="video\deepsearch-agent.mp4" title="Title"></video>
+
+<video controls src="video/deepsearch-agent.mp4" title="DeepSearch Agent 演示"></video>
+
 ### 核心能力
 
 | 能力 | 说明 |
