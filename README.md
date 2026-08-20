@@ -15,7 +15,7 @@ DeepResearch-Agent 是一个基于多 Agent 协作架构的自动化研究分析
 ### 演示
 
 <video width="800" controls>
-  <source src="video/deepsearch-agent.mp4" type="video/mp4">
+  <source src="./video/deepsearch-agent.mp4" type="video/mp4">
   您的浏览器不支持 video 标签，请直接下载视频 <a href="demo.mp4">demo.mp4</a>
 </video>
 
